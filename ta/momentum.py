@@ -394,6 +394,11 @@ class ROCIndicator(IndicatorMixin):
             (self._close - self._close.shift(self._window))
             / self._close.shift(self._window)
         ) * 100
+    
+    def target(self, t) -> pd.Series:
+        return (
+            (t/100)*self._close.shift(self._window)
+        )+self._close.shift(self._window)
 
     def roc(self) -> pd.Series:
         """Rate of Change (ROC)
