@@ -482,9 +482,9 @@ class AwesomeOscillatorIndicator(IndicatorMixin):
         a=self.sma_short1*self.window_1_short*self._window2 #Total accumulated by short sma using window 1, multiplied by window 2
         b=self.sma_short2*self.window_2_short*self._window1 #Total accumulated by short sma using window 2, multiplied by window 1
         c=self._window1*self._window2*t # Total accumulated by t, multiplied by both window 1 and window 2
-        d=self._window2+self._window1 # Our total divisor is the sum of window 1 and 2, since the total accued by both is multiplied by the other
+        d=self._window2-self._window1 # Our total divisor is the difference of window 1 and 2, since the total accued by both is multiplied by the other
         # returns a difference in stock price between the current daily high and the current daily low
-        return (c-b-a)/d
+        return (a-b-c)/d
 
     def awesome_oscillator(self) -> pd.Series:
         """Awesome Oscillator
