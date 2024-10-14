@@ -457,16 +457,23 @@ class AwesomeOscillatorIndicator(IndicatorMixin):
         self._window1 = window1
         self._window2 = window2
         self._fillna = fillna
+
+        self.median_price = 0.5 * (self._high + self._low)
+        self.min_periods_s = 0 if self._fillna else self._window1
+        self.min_periods_len = 0 if self._fillna else self._window2
+        self.sma_window1 = self.median_price.rolling(self._window1, min_periods=self.min_periods_s).mean()
+        self.sma_window2 = self.median_price.rolling(self._window2, min_periods=self.min_periods_len).mean()
+
         self._run()
 
     def _run(self):
-        median_price = 0.5 * (self._high + self._low)
-        min_periods_s = 0 if self._fillna else self._window1
-        min_periods_len = 0 if self._fillna else self._window2
         self._ao = (
-            median_price.rolling(self._window1, min_periods=min_periods_s).mean()
-            - median_price.rolling(self._window2, min_periods=min_periods_len).mean()
+            self.sma_window1
+            - self.sma_window2
         )
+    def target(self, t) -> pd.Series:
+        # returns a difference in stock price between the current daily high and the current daily low
+        return (t+self.sma_window2)*2
 
     def awesome_oscillator(self) -> pd.Series:
         """Awesome Oscillator
