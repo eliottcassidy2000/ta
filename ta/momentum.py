@@ -464,6 +464,13 @@ class AwesomeOscillatorIndicator(IndicatorMixin):
         self.sma_window1 = self.median_price.rolling(self._window1, min_periods=self.min_periods_s).mean()
         self.sma_window2 = self.median_price.rolling(self._window2, min_periods=self.min_periods_len).mean()
 
+        self.median_short = self.median_price.shift(1)
+        self.window_1_short=self.window_1 - 1
+        self.window_2_short=self.window_2 - 1
+        # Don't bother handling fillna for now
+        self.sma_short1 = self.median_short.rolling(self._window1_short, min_periods=self._window1_short).mean()
+        self.sma_short2 = self.median_short.rolling(self._window2_short, min_periods=self._window2_short).mean()
+
         self._run()
 
     def _run(self):
@@ -472,8 +479,12 @@ class AwesomeOscillatorIndicator(IndicatorMixin):
             - self.sma_window2
         )
     def target(self, t) -> pd.Series:
+        a=self.sma_short1*self.window_1_short*self._window2 #Total accumulated by short sma using window 1, multiplied by window 2
+        b=self.sma_short2*self.window_2_short*self._window1 #Total accumulated by short sma using window 2, multiplied by window 1
+        c=self._window1*self._window2*t # Total accumulated by t, multiplied by both window 1 and window 2
+        d=self._window2+self._window1 # Our total divisor is the sum of window 1 and 2, since the total accued by both is multiplied by the other
         # returns a difference in stock price between the current daily high and the current daily low
-        return (t+self.sma_window2)*2
+        return (c-b-a)/d
 
     def awesome_oscillator(self) -> pd.Series:
         """Awesome Oscillator
