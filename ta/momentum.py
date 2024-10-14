@@ -465,8 +465,8 @@ class AwesomeOscillatorIndicator(IndicatorMixin):
         self.sma_window2 = self.median_price.rolling(self._window2, min_periods=self.min_periods_len).mean()
 
         self.median_short = self.median_price.shift(1)
-        self.window_1_short=self.window_1 - 1
-        self.window_2_short=self.window_2 - 1
+        self.window_1_short=self._window1 - 1
+        self.window_2_short=self._window2 - 1
         # Don't bother handling fillna for now
         self.sma_short1 = self.median_short.rolling(self._window1_short, min_periods=self._window1_short).mean()
         self.sma_short2 = self.median_short.rolling(self._window2_short, min_periods=self._window2_short).mean()
