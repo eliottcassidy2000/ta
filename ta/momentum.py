@@ -547,17 +547,25 @@ class WilliamsRIndicator(IndicatorMixin):
         self._close = close
         self._lbp = lbp
         self._fillna = fillna
+
+        self.min_periods = 0 if self._fillna else self._lbp
+        self.highest_high = self._high.rolling(self._lbp, min_periods=self.min_periods).max()  # highest high over lookback period lbp
+        self.lowest_low = self._low.rolling(self._lbp, min_periods=self.min_periods).min()  # lowest low over lookback period lbp
+
+        self.lbp_short=self._lbp - 1
+        self.low_short=self._low.shift(1)
+        self.high_short=self._high.shift(1)
+        self.lowest_low_short = self.low_short.rolling(self.lbp_short, min_periods=self.lbp_short).min()
+        self.highest_high_short = self.high_short.rolling(self.lbp_short, min_periods=self.lbp_short).max()
+
         self._run()
 
     def _run(self):
-        min_periods = 0 if self._fillna else self._lbp
-        highest_high = self._high.rolling(
-            self._lbp, min_periods=min_periods
-        ).max()  # highest high over lookback period lbp
-        lowest_low = self._low.rolling(
-            self._lbp, min_periods=min_periods
-        ).min()  # lowest low over lookback period lbp
-        self._wr = -100 * (highest_high - self._close) / (highest_high - lowest_low)
+        self._wr = -100 * (self.highest_high - self._close) / (self.highest_high - self.lowest_low)
+    
+    def target(self,t) -> pd.Series:
+        # returns a current HIGH for today such that the indicator calculated over the last lbp-1 days is t (current HIGH replaces close in the original equation)
+        return (t*(self.highest_high_short-self.lowest_low_short)/100)+self.highest_high_short
 
     def williams_r(self) -> pd.Series:
         """Williams %R
